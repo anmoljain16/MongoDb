@@ -10,7 +10,7 @@ const app = express();
 //require a darabase connection
 const dbConnect = require('./db/dbConnect');
 const User = require('./db/userModel');
-
+const auth = require('./auth');
 
 //execute database connection
 dbConnect()
@@ -90,11 +90,8 @@ app.post("/login", (request, response) => {
     User.findOne({ email: request.body.email })
         //if email exists
         .then((user) => {
-            //compare the password entered by user and the hashed password found in the db
             console.log(user)
-            // console.log({ loginPassword: request.body.password, hashedPassword: user.password })
             bcrypt.compare(request.body.password, user.password)
-                //check if password matches
 
                 .then((passwordCheck) => {
                     console.log('passwordCheck', passwordCheck)
@@ -106,15 +103,15 @@ app.post("/login", (request, response) => {
                         })
                     }
 
-                    //create jwt token
+
 
                     const token = jwt.sign({
                         userId: user._id,
                         userEmail: user.email
-                    }, "RANDOM-TOKEN", { expiresIn: '24h' }
+                    }, "ANMOL", { expiresIn: '24h' }
                     )
 
-                    //return the success response
+
 
                     response.status(200).send({
                         message: 'Login Successfull',
@@ -125,7 +122,6 @@ app.post("/login", (request, response) => {
 
 
                 })
-                //catch error if password do not match
                 .catch((error) => {
                     response.status(400).send({
                         message: 'Passwords do not match',
@@ -145,18 +141,21 @@ app.post("/login", (request, response) => {
 
 })
 
-//register endpoint
-//hash password
-//salt techniques
 
 
-//get => reading the data for ex list of users
-//post => adding a new resource for ex adding a new user
-//put => updating a resource for ex updating the email or password of existing user
-//delete => deleting the resource for ex deleting the user
+app.get("/public-endpoint", (req, res) => {
+    res.json({
+        message:"you are in public endpoint access by any one"
+    })
+})
 
 
 
+app.get("/private-endpoint", auth, (req, res) => {
+    res.json({
+        message:"you are in private endpoint "
+    })
+})
 
 
 
